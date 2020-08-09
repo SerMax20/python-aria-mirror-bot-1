@@ -22,17 +22,30 @@ def stats(update, context):
     total = get_readable_file_size(total)
     used = get_readable_file_size(used)
     free = get_readable_file_size(free)
-    stats = f'Bot Uptime: {currentTime}\n' \
-            f'Total disk space: {total}\n' \
-            f'Used: {used}\n' \
-            f'Free: {free}'
+    sent = get_readable_file_size(psutil.net_io_counters().bytes_sent)
+    recv = get_readable_file_size(psutil.net_io_counters().bytes_recv)
+    cpuUsage = psutil.cpu_percent(interval=0.5)
+    memory = psutil.virtual_memory().percent
+    disk = psutil.disk_usage('/').percent
+    stats = f'<b>Bot Uptime:</b> {currentTime}\n' \
+            f'<b>Total disk space:</b> {total}\n' \
+            f'<b>Used:</b> {used}  ' \
+            f'<b>Free:</b> {free}\n\n' \
+            f'📊Data Usage📊\n<b>Upload:</b> {sent}\n' \
+            f'<b>Down:</b> {recv}\n\n' \
+            f'<b>CPU:</b> {cpuUsage}% ' \
+            f'<b>RAM:</b> {memory}% ' \
+            f'<b>Disk:</b> {disk}%'
     sendMessage(stats, context.bot, update)
 
 
 @run_async
 def start(update, context):
-    sendMessage("This is a bot which can mirror all your links to Google drive!\n"
-                "Type /help to get a list of available commands", context.bot, update)
+    start_string = f'''
+This is a bot which can mirror all your links to Google drive!
+Type /{BotCommands.HelpCommand} to get a list of available commands
+'''
+    sendMessage(start_string, context.bot, update)
 
 
 @run_async
@@ -65,6 +78,8 @@ def bot_help(update, context):
 
 /{BotCommands.MirrorCommand} [download_url][magnet_link]: Start mirroring the link to google drive
 
+/{BotCommands.UnzipMirrorCommand} [download_url][magnet_link] : starts mirroring and if downloaded file is any archive , extracts it to google drive
+
 /{BotCommands.TarMirrorCommand} [download_url][magnet_link]: start mirroring and upload the archived (.tar) version of the download
 
 /{BotCommands.WatchCommand} [youtube-dl supported link]: Mirror through youtube-dl 
@@ -82,7 +97,6 @@ def bot_help(update, context):
 /{BotCommands.AuthorizeCommand}: Authorize a chat or a user to use the bot (Can only be invoked by owner of the bot)
 
 /{BotCommands.LogCommand}: Get a log file of the bot. Handy for getting crash reports
-
 '''
     sendMessage(help_string, context.bot, update)
 
